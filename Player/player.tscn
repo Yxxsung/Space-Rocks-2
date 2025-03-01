@@ -1,0 +1,72 @@
+[gd_scene load_steps=10 format=3 uid="uid://bx1bhvodmq2cf"]
+
+[ext_resource type="Script" path="res://Player/player.gd" id="1_4i585"]
+[ext_resource type="PackedScene" uid="uid://crij471bg0i0r" path="res://Player/bullet.tscn" id="2_ha5ui"]
+[ext_resource type="Texture2D" uid="uid://dkt7klm70m12s" path="res://assets/player_ship.png" id="2_jcjbi"]
+[ext_resource type="PackedScene" uid="uid://dsrkaghcilkef" path="res://explosion/explosion.tscn" id="4_5lmwc"]
+[ext_resource type="AudioStream" uid="uid://tlkygctma7mt" path="res://assets/laser.ogg" id="5_umbqp"]
+[ext_resource type="AudioStream" uid="uid://sblhtqmeogq4" path="res://assets/sounds/engine.ogg" id="6_k5dqs"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_3ukxn"]
+radius = 30.0
+
+[sub_resource type="Curve" id="Curve_aqd18"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.994382, 0.186813), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Gradient" id="Gradient_7dk6s"]
+offsets = PackedFloat32Array(0, 0.726667)
+colors = PackedColorArray(0.882353, 0.376471, 0, 1, 1, 0, 0, 1)
+
+[node name="player" type="RigidBody2D"]
+contact_monitor = true
+max_contacts_reported = 1
+script = ExtResource("1_4i585")
+bullet_scene = ExtResource("2_ha5ui")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+rotation = 1.5708
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("2_jcjbi")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_3ukxn")
+
+[node name="Muzzle" type="Marker2D" parent="."]
+position = Vector2(50, 0)
+
+[node name="GunCooldown" type="Timer" parent="."]
+one_shot = true
+autostart = true
+
+[node name="Explosion" parent="." instance=ExtResource("4_5lmwc")]
+
+[node name="InvulnerabilityTimer" type="Timer" parent="."]
+wait_time = 2.0
+one_shot = true
+
+[node name="LaserSound" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("5_umbqp")
+
+[node name="EngineSound" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("6_k5dqs")
+
+[node name="Exhaust" type="CPUParticles2D" parent="."]
+show_behind_parent = true
+position = Vector2(-29, 0)
+rotation = 3.14159
+amount = 25
+local_coords = true
+emission_shape = 3
+emission_rect_extents = Vector2(1, 5)
+spread = 0.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 400.0
+initial_velocity_max = 400.0
+scale_amount_max = 6.0
+scale_amount_curve = SubResource("Curve_aqd18")
+color_ramp = SubResource("Gradient_7dk6s")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="timeout" from="GunCooldown" to="." method="_on_gun_cooldown_timeout"]
+[connection signal="timeout" from="InvulnerabilityTimer" to="." method="_on_invulnerability_timer_timeout"]
